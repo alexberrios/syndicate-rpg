@@ -2,7 +2,7 @@ import { IsOptional, IsString, IsUUID, IsInt, Min } from 'class-validator';
 
 export class WorldCreateDto {
   @IsString()
-  name: string;
+  name!: string;
 
   @IsOptional()
   @IsUUID()

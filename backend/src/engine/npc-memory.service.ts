@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
 
 @Injectable()
@@ -11,7 +12,7 @@ export class NPCMemoryService {
       return null;
     }
     const memory = Array.isArray(npc.memory) ? npc.memory : [npc.memory];
-    const updated = [...memory, memoryEntry].slice(-50);
+    const updated = [...memory, memoryEntry].slice(-50) as Prisma.InputJsonValue;
     return this.prisma.nPC.update({
       where: { id: npcId },
       data: { memory: updated },

@@ -2,13 +2,13 @@ import { IsInt, IsObject, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class ActionResolveDto {
   @IsUUID()
-  worldId: string;
+  worldId!: string;
 
   @IsUUID()
-  characterId: string;
+  characterId!: string;
 
   @IsString()
-  actionType: string;
+  actionType!: string;
 
   @IsOptional()
   @IsString()

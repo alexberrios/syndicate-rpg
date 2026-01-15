@@ -2,8 +2,8 @@ import { IsUUID } from 'class-validator';
 
 export class ContractNextDto {
   @IsUUID()
-  worldId: string;
+  worldId!: string;
 
   @IsUUID()
-  characterId: string;
+  characterId!: string;
 }
