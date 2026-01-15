@@ -1,0 +1,179 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String      @id @default(uuid())
+  email        String      @unique
+  passwordHash String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  worlds       World[]
+  characters   Character[]
+}
+
+model World {
+  id             String         @id @default(uuid())
+  name           String
+  seed           Int
+  timeDay        Int            @default(0)
+  ownerId        String?
+  owner          User?          @relation(fields: [ownerId], references: [id])
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  characters     Character[]
+  npcs           NPC[]
+  contracts      Contract[]
+  eventLogs      EventLog[]
+  reputations    Reputation[]
+  corruptions    Corruption[]
+  inventoryItems InventoryItem[]
+
+  @@index([ownerId])
+}
+
+model Character {
+  id             String         @id @default(uuid())
+  userId         String
+  worldId        String
+  name           String
+  class          String?
+  level          Int            @default(1)
+  stats          Json
+  isDead         Boolean        @default(false)
+  user           User           @relation(fields: [userId], references: [id])
+  world          World          @relation(fields: [worldId], references: [id])
+  partyMembers   PartyMember[]
+  inventoryItems InventoryItem[]
+  contracts      Contract[]
+  reputations    Reputation[]
+  corruptions    Corruption[]
+  eventLogs      EventLog[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([worldId])
+}
+
+model PartyMember {
+  id          String    @id @default(uuid())
+  characterId String
+  npcId       String?
+  name        String
+  role        String?
+  stats       Json?
+  character   Character @relation(fields: [characterId], references: [id])
+  npc         NPC?      @relation(fields: [npcId], references: [id])
+  createdAt   DateTime  @default(now())
+
+  @@index([characterId])
+  @@index([npcId])
+}
+
+model NPC {
+  id        String      @id @default(uuid())
+  worldId   String
+  name      String
+  faction   String?
+  memory    Json        @default("{}")
+  world     World       @relation(fields: [worldId], references: [id])
+  party     PartyMember[]
+  eventLogs EventLog[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([worldId])
+}
+
+model Contract {
+  id          String         @id @default(uuid())
+  worldId     String
+  characterId String
+  title       String
+  description String
+  status      ContractStatus @default(PENDING)
+  rewards     Json?
+  penalties   Json?
+  world       World          @relation(fields: [worldId], references: [id])
+  character   Character      @relation(fields: [characterId], references: [id])
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([worldId])
+  @@index([characterId])
+}
+
+model InventoryItem {
+  id          String    @id @default(uuid())
+  worldId     String
+  characterId String
+  name        String
+  type        String?
+  quantity    Int       @default(1)
+  meta        Json?
+  world       World     @relation(fields: [worldId], references: [id])
+  character   Character @relation(fields: [characterId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([worldId])
+  @@index([characterId])
+}
+
+model Reputation {
+  id          String    @id @default(uuid())
+  worldId     String
+  characterId String
+  faction     String
+  value       Int       @default(0)
+  world       World     @relation(fields: [worldId], references: [id])
+  character   Character @relation(fields: [characterId], references: [id])
+  updatedAt   DateTime  @updatedAt
+
+  @@index([worldId])
+  @@index([characterId])
+}
+
+model Corruption {
+  id          String    @id @default(uuid())
+  worldId     String
+  characterId String
+  source      String?
+  value       Int       @default(0)
+  world       World     @relation(fields: [worldId], references: [id])
+  character   Character @relation(fields: [characterId], references: [id])
+  updatedAt   DateTime  @updatedAt
+
+  @@index([worldId])
+  @@index([characterId])
+}
+
+model EventLog {
+  id          String    @id @default(uuid())
+  worldId     String
+  characterId String?
+  npcId       String?
+  type        String
+  payload     Json
+  createdAt   DateTime  @default(now())
+  world       World     @relation(fields: [worldId], references: [id])
+  character   Character? @relation(fields: [characterId], references: [id])
+  npc         NPC?      @relation(fields: [npcId], references: [id])
+
+  @@index([worldId])
+  @@index([characterId])
+  @@index([npcId])
+}
+
+enum ContractStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  FAILED
+}
